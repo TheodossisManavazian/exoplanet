@@ -23,8 +23,8 @@ var DARK_LAYOUT = {
   paper_bgcolor: "rgba(0,0,0,0)",
   plot_bgcolor: "rgba(0,0,0,0)",
   font: { color: "#ccc" },
-  xaxis: { gridcolor: "rgba(255,255,255,0.1)", zerolinecolor: "rgba(255,255,255,0.1)" },
-  yaxis: { gridcolor: "rgba(255,255,255,0.1)", zerolinecolor: "rgba(255,255,255,0.1)" }
+  xaxis: { gridcolor: "rgba(255,255,255,0.1)", zerolinecolor: "rgba(255,255,255,0.1)", automargin: true },
+  yaxis: { gridcolor: "rgba(255,255,255,0.1)", zerolinecolor: "rgba(255,255,255,0.1)", automargin: true }
 };
 
 // Global state: full dataset and current filters (empty = show all)
@@ -226,7 +226,7 @@ function buildYearChart(data) {
     barmode: "stack",
     xaxis: Object.assign({}, DARK_LAYOUT.xaxis, { title: { text: "Discovery Year", standoff: 7 } }),
     yaxis: Object.assign({}, DARK_LAYOUT.yaxis, {
-      title: "Number of Planets (√ scale)",
+      title: { text: "Number of Planets (√ scale)", standoff: 15 },
       tickvals: tickPositions,
       ticktext: tickValues.map(String)
     }),
@@ -269,7 +269,7 @@ function buildMethodChart(data) {
 
   var colors = methods.map(function (method) {
     if (activeMethods.length > 0 && activeMethods.indexOf(method) === -1) {
-      return "#ddd";
+      return "#444";
     }
     return METHOD_COLORS[method];
   });
@@ -292,7 +292,7 @@ function buildMethodChart(data) {
   var layout = Object.assign({}, DARK_LAYOUT, {
     xaxis: Object.assign({}, DARK_LAYOUT.xaxis, { title: { text: "Discovery Method", standoff: 7 } }),
     yaxis: Object.assign({}, DARK_LAYOUT.yaxis, {
-      title: "Number of Planets (√ scale)",
+      title: { text: "Number of Planets (√ scale)", standoff: 15 },
       tickvals: tickPositions,
       ticktext: tickValues.map(String)
     }),
