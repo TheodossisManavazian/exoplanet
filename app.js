@@ -316,43 +316,69 @@ function buildScatterPlot(data) {
 
   var methods = Object.keys(METHOD_COLORS);
 
-  var traces = methods.map(function (method) {
+  var traces = [];
+  methods.forEach(function (method) {
     var subset = scatterData.filter(function (d) {
       return d.discovery_method === method;
     });
 
-    // sqrt to compress range, x6 so median ~2.4 Earth radii is a decent dot
-    var sizes = subset.map(function (d) {
-      if (d.planet_radius === null) return 8;
-      return Math.sqrt(d.planet_radius) * 6;
-    });
+    var known = subset.filter(function (d) { return d.planet_radius !== null; });
+    var unknown = subset.filter(function (d) { return d.planet_radius === null; });
 
-    return {
-      x: subset.map(function (d) { return d.orbital_period; }),
-      y: subset.map(function (d) { return Math.sqrt(d.distance * 3.26156); }),  // sqrt of light-years
-      text: subset.map(function (d) {
-        var radius = d.planet_radius !== null ? d.planet_radius + " Earth radii" : "Unknown";
-        var ly = d.distance !== null ? (d.distance * 3.26156).toFixed(1) + " ly" : "Unknown";
-        return d.name + "</b><br>"
-          + "Orbital Period: " + (d.orbital_period !== null ? d.orbital_period.toFixed(4) + " days" : "Unknown") + "<br>"
-          + "Distance: " + ly + "<br>"
-          + "Radius: " + radius + "<br>"
-          + "Discovered: " + d.discovery_year + "<br>"
-          + '<span style="color:' + METHOD_COLORS[method] + ';">&#9679;</span> ' + d.original_method;
-      }),
-      mode: "markers",
-      type: "scatter",
-      name: method,
-      marker: {
-        color: METHOD_COLORS[method],
-        size: sizes,
-        sizemode: "diameter",
-        sizemin: 3,
-        opacity: 0.45
-      },
-      hovertemplate: "<b>%{text}<extra></extra>",
-      showlegend: false
-    };
+    function makeHoverText(d) {
+      var radius = d.planet_radius !== null ? d.planet_radius + " Earth radii" : "Unknown";
+      var ly = d.distance !== null ? (d.distance * 3.26156).toFixed(1) + " ly" : "Unknown";
+      return d.name + "</b><br>"
+        + "Orbital Period: " + (d.orbital_period !== null ? d.orbital_period.toFixed(4) + " days" : "Unknown") + "<br>"
+        + "Distance: " + ly + "<br>"
+        + "Radius: " + radius + "<br>"
+        + "Discovered: " + d.discovery_year + "<br>"
+        + '<span style="color:' + METHOD_COLORS[method] + ';">&#9679;</span> ' + d.original_method;
+    }
+
+    // Known radius: circles sized by planet radius
+    if (known.length > 0) {
+      traces.push({
+        x: known.map(function (d) { return d.orbital_period; }),
+        y: known.map(function (d) { return Math.sqrt(d.distance * 3.26156); }),
+        text: known.map(makeHoverText),
+        mode: "markers",
+        type: "scatter",
+        name: method,
+        marker: {
+          color: METHOD_COLORS[method],
+          size: known.map(function (d) { return Math.sqrt(d.planet_radius) * 6; }),
+          symbol: "circle",
+          line: { width: 0.375, color: "rgba(255,255,255,0.3)" },
+          sizemode: "diameter",
+          sizemin: 3,
+          opacity: 0.45
+        },
+        hovertemplate: "<b>%{text}<extra></extra>",
+        showlegend: false
+      });
+    }
+
+    // Unknown radius: diamonds at fixed size
+    if (unknown.length > 0) {
+      traces.push({
+        x: unknown.map(function (d) { return d.orbital_period; }),
+        y: unknown.map(function (d) { return Math.sqrt(d.distance * 3.26156); }),
+        text: unknown.map(makeHoverText),
+        mode: "markers",
+        type: "scatter",
+        name: method + " (unknown radius)",
+        marker: {
+          color: METHOD_COLORS[method],
+          size: 8,
+          symbol: 2,
+          line: { width: 0.375, color: "rgba(255,255,255,0.3)" },
+          opacity: 0.45
+        },
+        hovertemplate: "<b>%{text}<extra></extra>",
+        showlegend: false
+      });
+    }
   });
 
   var layout = Object.assign({}, DARK_LAYOUT, {
